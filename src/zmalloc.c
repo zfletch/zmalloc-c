@@ -1,6 +1,7 @@
 #include <stdint.h>
 #include <stdlib.h>
 #include <stdbool.h>
+#include <string.h>
 #include "./zmalloc.h"
 
 #ifdef DEBUG
@@ -27,7 +28,7 @@ static ZRegion* zdivideRegion(ZRegion* region, uint32_t size); // divide up a re
 static const int z_memory_size = 0x100000;
 
 // the minimum size of a chunk in bytes
-// must be a power of 2
+// must be a power of 2 and greater than or equal to 16
 // including the ZRegion struct (8  bytes)
 static const int z_min_chunk_size = 0x20;
 
@@ -77,6 +78,22 @@ void* zmalloc(uint32_t size)
 
 	available->free = false;
 	return (void*) (available + 1);
+}
+
+// allocates num * size bytes and initializes them to 0
+// calls zmalloc then loops through the allocated memory, initializing everything to 0
+void* zcalloc(uint32_t num, uint32_t size)
+{
+	uint32_t num_bytes = num * size;
+	void* block = zmalloc(num_bytes);
+
+	if (block == NULL) {
+		return (void*) block;
+	}
+
+	memset(block, 0, num_bytes);
+
+	return block;
 }
 
 // given a pointer, frees the memory if the pointer had previously been allocated with zmalloc

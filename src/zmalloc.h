@@ -13,7 +13,9 @@ void zfree(void* ptr);
 
 // to be implemented
 // void* zrealloc(uint32_t size);
-// void* zcalloc((uint32_t num, uint32_t size);
+
+// allocates num * size bytes and initializes them to 0
+void* zcalloc(uint32_t num, uint32_t size);
 
 #ifdef DEBUG
 // prints the memory usage and mapping to stdout
