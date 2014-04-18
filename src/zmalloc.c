@@ -81,7 +81,7 @@ void* zmalloc(uint32_t size)
 }
 
 // allocates num * size bytes and initializes them to 0
-// calls zmalloc then loops through the allocated memory, initializing everything to 0
+// calls zmalloc then initializing every byte to 0
 void* zcalloc(uint32_t num, uint32_t size)
 {
 	uint32_t num_bytes = num * size;
