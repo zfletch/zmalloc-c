@@ -20,12 +20,13 @@ void test_zmalloc (TestResult* result, int seed)
 		int size = rand() % max_memory_size;
 		mem[ii] = (int*) zmalloc(size * sizeof(int));
 
+		// all memory allocations should succeed
+		affirm(result, size == 0 || mem[ii] != NULL, "Memory allocation failed");
+
 		for (jj = 0; jj < size; jj += 1) {
 			mem[ii][jj] = rand();
 		}
 
-		// all memory alloctions should succeed
-		affirm(result, size == 0 || mem[ii] != NULL, "Memory allocation failed");
 	}
 
 	srand(seed);
@@ -34,11 +35,38 @@ void test_zmalloc (TestResult* result, int seed)
 		int size = rand() % max_memory_size;
 		for (jj = 0; jj < size; jj += 1) {
 			// check that the value was not overwritten
-			// affirm(result, mem[ii][jj] == rand(), "Memory checking failed");
+			affirm(result, mem[ii][jj] == rand(), "Memory checking failed");
 		}
 		zfree(mem[ii]);
 	}
 
+}
+
+void test_zcalloc (TestResult* result, int seed)
+{
+	int ii, jj;
+	int* mem[num_memory_allocations];
+
+	srand(seed);
+	for (ii = 0; ii < num_memory_allocations; ii += 1) {
+
+		int size = rand() % max_memory_size;
+		mem[ii] = (int*) zcalloc(size, sizeof(int));
+
+		// all memory allocations should succeed
+		affirm(result, size == 0 || mem[ii] != NULL, "Memory allocation failed");
+	}
+
+	srand(seed);
+	for (ii = 0; ii < num_memory_allocations; ii += 1) {
+
+		int size = rand() % max_memory_size;
+		for (jj = 0; jj < size; jj += 1) {
+			// check that the value is 0
+			affirm(result, mem[ii][jj] == 0, "Memory checking failed");
+		}
+		zfree(mem[ii]);
+	}
 }
 
 void test_zfree (TestResult* result, int seed)
@@ -86,13 +114,55 @@ void test_zfree (TestResult* result, int seed)
 	for (ii = 0; ii < num_allocations; ii += 1) {
 		int size = rand() % max_memory_size;
 		allocations[ii] = (int*) zmalloc(size * sizeof(int));
-		affirm(result, allocations[ii] != NULL, NULL);
+		affirm(result, allocations[ii] != NULL, "Memory allocation after free failed");
 	}
 	for (ii = 0; ii < num_allocations; ii += 1) {
 		zfree(allocations[ii]);
 	}
 
+	free(allocations);
 }
+
+void test_zrealloc (TestResult* result, int seed)
+{
+	int ii, jj;
+	int* mem[num_memory_allocations];
+	int old_size[num_memory_allocations];
+	int new_size[num_memory_allocations];
+
+	srand(seed);
+	for (ii = 0; ii < num_memory_allocations; ii += 1) {
+
+		int size = rand() % max_memory_size;
+		mem[ii] = (int*) zmalloc(size * sizeof(int));
+		old_size[ii] = size;
+
+		// all memory allocations should succeed
+		affirm(result, size == 0 || mem[ii] != NULL, "Memory allocation failed");
+
+		for (jj = 0; jj < size; jj += 1) {
+			mem[ii][jj] = rand();
+		}
+	}
+
+	for (ii = 0; ii < num_memory_allocations; ii += 1) {
+
+		int size = rand() % max_memory_size;
+		mem[ii] = (int*) zrealloc(mem[ii], size * sizeof(int));
+		new_size[ii] = size;
+
+		// all memory allocations should succeed
+		affirm(result, size == 0 || mem[ii] != NULL, "Memory reallocation failed");
+
+		if (size > old_size[ii]) {
+			for (jj = old_size[ii]; jj < size; jj += 1) {
+				mem[ii][jj] = rand();
+			}
+		}
+	}
+
+}
+
 
 int main (int argc, char** argv)
 {
@@ -101,9 +171,11 @@ int main (int argc, char** argv)
 			"test memory allocator",
 			(TestFunc[]) {
 				{ test_zmalloc, "test zmalloc" },
+				{ test_zcalloc, "test zcalloc" },
 				{ test_zfree, "test zfree" },
+				{ test_zrealloc, "test zrealloc" },
 			},
-			2);
+			4);
 
 	if (argc == 1) { // if no arguments are passed in, run the test once
 		runTestHarness(harness, 282475249, BASIC_INFO);
