@@ -114,7 +114,34 @@ void zfree(void* ptr)
 // moves the block pointed to by ptr to somewhere with at leaste size bytes
 void* zrealloc(void* ptr, size_t size)
 {
-	return NULL;
+	ZRegion* region = ((ZRegion*) ptr) - 1;
+
+	if (region < z_head_region || region > (z_tail_region - 1)) {
+		return NULL;
+	}
+
+	if (size == 0) {
+		zfree(ptr);
+		return NULL;
+	}
+
+
+	size_t total_size = zgetSize(size);
+	if (total_size <= region->size) {
+		return ptr;
+	}
+
+	void* new_block = zmalloc(size);
+
+	if (new_block == NULL) {
+		return NULL;
+	}
+
+	// destination source numbytes
+	memcpy(new_block, ptr, region->size - sizeof(ZRegion));
+	zfree(ptr);
+
+	return new_block;
 }
 
 // given an integer, adds the size of a region and finds the minimum power of 2 it can fit in

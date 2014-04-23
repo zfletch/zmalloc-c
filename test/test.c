@@ -140,7 +140,7 @@ void test_zrealloc (TestResult* result, int seed)
 		// all memory allocations should succeed
 		affirm(result, size == 0 || mem[ii] != NULL, "Memory allocation failed");
 
-		for (jj = 0; jj < size; jj += 1) {
+		for (jj = 0; jj < old_size[ii]; jj += 1) {
 			mem[ii][jj] = rand();
 		}
 	}
@@ -148,15 +148,47 @@ void test_zrealloc (TestResult* result, int seed)
 	for (ii = 0; ii < num_memory_allocations; ii += 1) {
 
 		int size = rand() % max_memory_size;
-		mem[ii] = (int*) zrealloc(mem[ii], size * sizeof(int));
-		new_size[ii] = size;
+		if (mem[ii] != NULL) {
+			mem[ii] = (int*) zrealloc(mem[ii], size * sizeof(int));
+			new_size[ii] = size;
 
-		// all memory allocations should succeed
-		affirm(result, size == 0 || mem[ii] != NULL, "Memory reallocation failed");
+			// all memory allocations should succeed
+			affirm(result, size == 0 || mem[ii] != NULL, "Memory reallocation failed");
 
-		if (size > old_size[ii]) {
-			for (jj = old_size[ii]; jj < size; jj += 1) {
-				mem[ii][jj] = rand();
+			if (new_size[ii] > old_size[ii]) {
+				for (jj = old_size[ii]; jj < new_size[ii]; jj += 1) {
+					mem[ii][jj] = rand();
+				}
+			}
+		}
+	}
+
+	srand(seed);
+	for (ii = 0; ii < num_memory_allocations; ii += 1) {
+
+		rand(); // old size
+
+		for (jj = 0; jj < old_size[ii]; jj += 1) {
+			if (jj < new_size[ii]) {
+				affirm(result, mem[ii][jj] == rand(), "Memory checking from allocation failed");
+			} else {
+				// if the new size is less than the old size we still need to call
+				// rand to verify correctly, but we don't want to access the memory
+				rand();
+			}
+		}
+	}
+
+	for (ii = 0; ii < num_memory_allocations; ii += 1) {
+
+		rand(); // new size
+		if (mem[ii] != NULL) {
+
+
+			if (new_size[ii] > old_size[ii]) {
+				for (jj = old_size[ii]; jj < new_size[ii]; jj += 1) {
+					affirm(result, mem[ii][jj] == rand(), "Memory checking from reallocation failed");
+				}
 			}
 		}
 	}
@@ -178,13 +210,14 @@ int main (int argc, char** argv)
 			4);
 
 	if (argc == 1) { // if no arguments are passed in, run the test once
-		runTestHarness(harness, 282475249, BASIC_INFO);
+		runTestHarness(harness, 1115438165, BASIC_INFO);
 	} else if (argc == 2) { // if a number is passed in, run it that many times
 		int num = atoi(argv[1]);
 		int valid = true;
 		int ii;
 		for (ii = 0; ii < num; ii += 1) {
-			valid = valid && runTestHarness(harness, rand(), NO_INFO);
+			int seed = rand();
+			valid = runTestHarness(harness, seed, MINIMAL_INFO) && valid;
 		}
 		if (valid) {
 			printf("[passed] All tests passed!\n");
