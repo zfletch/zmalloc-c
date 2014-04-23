@@ -6,16 +6,17 @@
 // returns a pointer to a place in memory with at lease size bytes
 // will be 8-byte (double-word) aligned
 // will return NULL if memory cannot be allocated or 0 is passed in
-void* zmalloc(uint32_t size);
+void* zmalloc(size_t size);
 
 // deallocates memory allocated by zmalloc
 void zfree(void* ptr);
 
-// to be implemented
-// void* zrealloc(uint32_t size);
+// changes the size of the block that ptr points to
+// possibly moving the memory to somewhere else
+void* zrealloc(void* ptr, size_t size);
 
 // allocates num * size bytes and initializes them to 0
-void* zcalloc(uint32_t num, uint32_t size);
+void* zcalloc(size_t num, size_t size);
 
 #ifdef DEBUG
 // prints the memory usage and mapping to stdout

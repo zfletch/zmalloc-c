@@ -13,11 +13,11 @@ static ZRegion* z_head_region = NULL; // where the block of memory starts
 static ZRegion* z_tail_region = NULL; // where the block of memory ends
 
 // utility functions
-static uint32_t zgetSize(uint32_t size); // add sizeof(ZRegion) and round up to nearest power of 2
-static ZRegion* zfindAvailable(uint32_t size); // find a place in memory
-static int zmergeFree(); // merge adjacent free blocks
+static size_t zgetSize(size_t size); // add sizeof(ZRegion) and round up to nearest power of 2
+static ZRegion* zfindAvailable(size_t size); // find a place in memory
+static bool zmergeFree(); // merge adjacent free blocks
 static ZRegion* znextRegion(ZRegion* region); // go to the next ZRegion
-static ZRegion* zdivideRegion(ZRegion* region, uint32_t size); // divide up a region to fit size bytes
+static ZRegion* zdivideRegion(ZRegion* region, size_t size); // divide up a region to fit size bytes
 
 // BEGIN things that you should change to use zmalloc with
 // a different device/operating system
@@ -25,12 +25,12 @@ static ZRegion* zdivideRegion(ZRegion* region, uint32_t size); // divide up a re
 // the total size of memory that can be allocated
 // must be a power of 2
 // must be larger than z_min_chunk_size
-static const int z_memory_size = 0x100000;
+static const size_t z_memory_size = 0x100000;
 
 // the minimum size of a chunk in bytes
 // must be a power of 2 and greater than or equal to 16
 // including the ZRegion struct (8  bytes)
-static const int z_min_chunk_size = 0x20;
+static const size_t z_min_chunk_size = 0x20;
 
 // function that initializes the memory
 // right now it just uses system malloc
@@ -52,7 +52,7 @@ static void zmallocInit()
 
 // given an unsigned int returns a block of memory with at least as many bytes
 // modifies the global chunk of memory by dividing it into regions or merging adjacent free regions
-void* zmalloc(uint32_t size)
+void* zmalloc(size_t size)
 {
 
 	if (z_head_region == NULL) {
@@ -63,7 +63,7 @@ void* zmalloc(uint32_t size)
 		return NULL;
 	}
 
-	int total_size = zgetSize(size);
+	size_t total_size = zgetSize(size);
 	ZRegion* available = zfindAvailable(total_size);
 
 	if (available == NULL) {
@@ -82,9 +82,9 @@ void* zmalloc(uint32_t size)
 
 // allocates num * size bytes and initializes them to 0
 // calls zmalloc then initializing every byte to 0
-void* zcalloc(uint32_t num, uint32_t size)
+void* zcalloc(size_t num, size_t size)
 {
-	uint32_t num_bytes = num * size;
+	size_t num_bytes = num * size;
 	void* block = zmalloc(num_bytes);
 
 	if (block == NULL) {
@@ -111,11 +111,17 @@ void zfree(void* ptr)
 	return;
 }
 
+// moves the block pointed to by ptr to somewhere with at leaste size bytes
+void* zrealloc(void* ptr, size_t size)
+{
+	return NULL;
+}
+
 // given an integer, adds the size of a region and finds the minimum power of 2 it can fit in
-static uint32_t zgetSize(uint32_t size)
+static size_t zgetSize(size_t size)
 {
 	size += sizeof(ZRegion);
-	uint32_t total_size = z_min_chunk_size;
+	size_t total_size = z_min_chunk_size;
 
 	while (size > total_size) {
 		total_size *= 2;
@@ -128,7 +134,7 @@ static uint32_t zgetSize(uint32_t size)
 // then it calls zdivideRegion which splits of the larger free block into smaller ones
 // if there are no larger free blocks, returns NULL
 // merges adjacent free blocks as it goes through the list
-static ZRegion* zfindAvailable(uint32_t size)
+static ZRegion* zfindAvailable(size_t size)
 {
 	ZRegion* region = z_head_region;
 	ZRegion* buddy = znextRegion(region);
@@ -191,11 +197,11 @@ static ZRegion* zfindAvailable(uint32_t size)
 }
 
 // does a single level merge of adjacent free memory blocks
-static int zmergeFree()
+static bool zmergeFree()
 {
 	ZRegion* region = z_head_region;
 	ZRegion* buddy = znextRegion(region);
-	int modified = false;
+	bool modified = false;
 
 	while (region < z_tail_region && buddy < z_tail_region) {
 		if (region->free && buddy->free && region->size == buddy->size) { // both region and buddy are free
@@ -226,10 +232,10 @@ static ZRegion* znextRegion(ZRegion* region)
 
 // given a region of free memory and a size, splits it in half repeatedly until the desired size is reached
 // then returns a pointer to that new free region
-static ZRegion* zdivideRegion(ZRegion* region, uint32_t size)
+static ZRegion* zdivideRegion(ZRegion* region, size_t size)
 {
 	while (region->size > size) {
-		int rsize = region->size / 2;
+		size_t rsize = region->size / 2;
 		region->size = rsize;
 		region = znextRegion(region);
 
