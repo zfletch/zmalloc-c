@@ -3,7 +3,7 @@
 #include <stdint.h>
 
 // given an unsigned integer, size
-// returns a pointer to a place in memory with at lease size bytes
+// returns a pointer to a place in memory with at least size bytes
 // will be 8-byte (double-word) aligned
 // will return NULL if memory cannot be allocated or 0 is passed in
 void *zmalloc(size_t size);
