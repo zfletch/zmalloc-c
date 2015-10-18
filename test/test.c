@@ -39,7 +39,6 @@ void test_zmalloc (TestResult *result, int seed)
     }
     zfree(mem[ii]);
   }
-
 }
 
 void test_zcalloc (TestResult *result, int seed)
@@ -192,7 +191,6 @@ void test_zrealloc (TestResult *result, int seed)
       }
     }
   }
-
 }
 
 

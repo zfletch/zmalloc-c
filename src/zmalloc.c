@@ -58,13 +58,8 @@ void zmalloc_cleanup(void)
 void *zmalloc(size_t size)
 {
 
-  if (z_head_region == NULL) {
-    zmalloc_init();
-  }
-
-  if (size == 0) {
-    return NULL;
-  }
+  if (z_head_region == NULL) zmalloc_init();
+  if (size == 0) return NULL;
 
   size_t total_size = zgetSize(size);
   ZRegion *available = zfindAvailable(total_size);
@@ -90,9 +85,7 @@ void *zcalloc(size_t num, size_t size)
   size_t num_bytes = num * size;
   void *block = zmalloc(num_bytes);
 
-  if (block == NULL) {
-    return (void *) block;
-  }
+  if (block == NULL) return (void *) block;
 
   memset(block, 0, num_bytes);
 
@@ -130,15 +123,11 @@ void *zrealloc(void *ptr, size_t size)
 
 
   size_t total_size = zgetSize(size);
-  if (total_size <= region->size) {
-    return ptr;
-  }
+  if (total_size <= region->size) return ptr;
 
   void *new_block = zmalloc(size);
 
-  if (new_block == NULL) {
-    return NULL;
-  }
+  if (new_block == NULL) return NULL;
 
   // destination source numbytes
   memcpy(new_block, ptr, region->size - sizeof(ZRegion));
@@ -153,9 +142,8 @@ static size_t zgetSize(size_t size)
   size += sizeof(ZRegion);
   size_t total_size = z_min_chunk_size;
 
-  while (size > total_size) {
-    total_size *= 2;
-  }
+  while (size > total_size) total_size *= 2;
+
   return total_size;
 }
 
