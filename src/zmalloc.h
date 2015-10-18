@@ -26,8 +26,8 @@ void zprintMemory(void);
 // since everything needs to be double-word aligned the ZRegion
 // struct (bookkeeping information for each block) should be 8 bytes
 typedef struct ZRegion {
-	uint32_t free;
-	uint32_t size;
+  uint32_t free;
+  uint32_t size;
 } ZRegion;
 
 
