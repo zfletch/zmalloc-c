@@ -66,13 +66,11 @@ void *zmalloc(size_t size)
 
   if (available == NULL) {
     // if there is no space left then merge free blocks until all free blocks are merged
-    while (zmergeFree()) { }
+    while (zmergeFree());
     available = zfindAvailable(total_size);
   }
 
-  if (available == NULL) {
-    return NULL;
-  }
+  if (available == NULL) return NULL;
 
   available->free = false;
   return (void *) (available + 1);
@@ -157,13 +155,6 @@ static ZRegion *zfindAvailable(size_t size)
   ZRegion *region = z_head_region;
   ZRegion *buddy = znextRegion(region);
   ZRegion *closest = NULL;
-
-//  while (region < z_tail_region && closest == NULL) {
-//    if (region->free && size <= region->size && (closest == NULL || region->size <= closest->size)) {
-//      closest = region;
-//    }
-//    region = znextRegion(region);
-//  }
 
   // if there is only one block of memory divide it up
   if (buddy == z_tail_region && region->free) {
@@ -271,7 +262,6 @@ void zprint_memory()
   if (z_head_region == NULL) {
     printf("No memory allocated\n");
   } else {
-
     ZRegion *region = z_head_region;
     while (region < z_tail_region) {
       if (region->free) {
