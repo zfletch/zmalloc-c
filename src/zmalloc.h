@@ -23,6 +23,20 @@ void *zcalloc(size_t num, size_t size);
 void zprint_memory(void);
 #endif // DEBUG
 
+// semi-private methods
+// they shouldn't be needed in most cases except
+// when the memory allocator needs to clean up
+// after itself or be initialized multiple times
+
+// function that initializes the memory
+// right now it just uses system malloc
+// to allocate a block of z_min_chunk_sizen bytes
+void zmalloc_init(void);
+
+// free any system memory that may have been allocated
+// in zmalloc_init()
+void zmalloc_cleanup(void);
+
 // since everything needs to be double-word aligned the ZRegion
 // struct (bookkeeping information for each block) should be 8 bytes
 typedef struct ZRegion {

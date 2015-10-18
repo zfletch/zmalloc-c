@@ -32,19 +32,22 @@ static const size_t z_memory_size = 0x100000;
 // including the ZRegion struct (8  bytes)
 static const size_t z_min_chunk_size = 0x20;
 
-// function that initializes the memory
-// right now it just uses system malloc
-// to allocate a block of z_min_chunk_sizen bytes
-static void zmalloc_init();
-
 // initializes the z_head_region and z_tail_region
-void zmalloc_init()
+void zmalloc_init(void)
 {
   z_head_region = (ZRegion *) malloc(z_memory_size);
   z_head_region->free = true;
   z_head_region->size = z_memory_size;
 
   z_tail_region = znextRegion(z_head_region);
+  return;
+}
+
+// clean up all memory allocated above
+void zmalloc_cleanup(void)
+{
+  free(z_head_region);
+  z_head_region = NULL;
   return;
 }
 
