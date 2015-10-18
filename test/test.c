@@ -223,4 +223,6 @@ int main (int argc, char **argv)
       printf("[FAILED] One or more tests have failed\n");
     }
   }
+  free(harness);
+  return 0;
 }
