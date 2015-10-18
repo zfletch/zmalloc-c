@@ -1,6 +1,6 @@
 #CC=/opt/local/bin/gcc-mp-4.8
 CC=gcc
-CFLAGS=-c -Wall
+CFLAGS=-c -Wall -Wextra
 
 all: test
 

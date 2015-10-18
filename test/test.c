@@ -9,16 +9,16 @@
 static const int max_memory_size = 400;
 static const int num_memory_allocations = 100;
 
-void test_zmalloc (TestResult* result, int seed)
+void test_zmalloc (TestResult *result, int seed)
 {
   int ii, jj;
-  int* mem[num_memory_allocations];
+  int *mem[num_memory_allocations];
 
   srand(seed);
   for (ii = 0; ii < num_memory_allocations; ii += 1) {
 
     int size = rand() % max_memory_size;
-    mem[ii] = (int*) zmalloc(size * sizeof(int));
+    mem[ii] = (int *) zmalloc(size * sizeof(int));
 
     // all memory allocations should succeed
     affirm(result, size == 0 || mem[ii] != NULL, "Memory allocation failed");
@@ -42,16 +42,16 @@ void test_zmalloc (TestResult* result, int seed)
 
 }
 
-void test_zcalloc (TestResult* result, int seed)
+void test_zcalloc (TestResult *result, int seed)
 {
   int ii, jj;
-  int* mem[num_memory_allocations];
+  int *mem[num_memory_allocations];
 
   srand(seed);
   for (ii = 0; ii < num_memory_allocations; ii += 1) {
 
     int size = rand() % max_memory_size;
-    mem[ii] = (int*) zcalloc(size, sizeof(int));
+    mem[ii] = (int *) zcalloc(size, sizeof(int));
 
     // all memory allocations should succeed
     affirm(result, size == 0 || mem[ii] != NULL, "Memory allocation failed");
@@ -69,20 +69,20 @@ void test_zcalloc (TestResult* result, int seed)
   }
 }
 
-void test_zfree (TestResult* result, int seed)
+void test_zfree (TestResult *result, int seed)
 {
   // zprintMemory();
   // printf("\n");
   int num_allocations = 0;
 
-  int** allocations = (int**) malloc(num_memory_allocations * sizeof(int*));
+  int **allocations = (int **) malloc(num_memory_allocations * sizeof(int *));
   int length = num_memory_allocations;
 
   srand(seed);
   while (true) {
 
     int size = rand() % max_memory_size;
-    int* mem = (int*) zmalloc(size * sizeof(int));
+    int *mem = (int *) zmalloc(size * sizeof(int));
 
     if (mem == NULL) {
       break;
@@ -90,7 +90,7 @@ void test_zfree (TestResult* result, int seed)
 
     if (length == num_allocations) {
       length *= 2;
-      allocations = (int**) realloc(allocations, length * sizeof(int*));
+      allocations = (int **) realloc(allocations, length * sizeof(int *));
     }
 
     allocations[num_allocations] = mem;
@@ -113,7 +113,7 @@ void test_zfree (TestResult* result, int seed)
   srand(seed);
   for (ii = 0; ii < num_allocations; ii += 1) {
     int size = rand() % max_memory_size;
-    allocations[ii] = (int*) zmalloc(size * sizeof(int));
+    allocations[ii] = (int *) zmalloc(size * sizeof(int));
     affirm(result, allocations[ii] != NULL, "Memory allocation after free failed");
   }
   for (ii = 0; ii < num_allocations; ii += 1) {
@@ -123,10 +123,10 @@ void test_zfree (TestResult* result, int seed)
   free(allocations);
 }
 
-void test_zrealloc (TestResult* result, int seed)
+void test_zrealloc (TestResult *result, int seed)
 {
   int ii, jj;
-  int* mem[num_memory_allocations];
+  int *mem[num_memory_allocations];
   int old_size[num_memory_allocations];
   int new_size[num_memory_allocations];
 
@@ -134,7 +134,7 @@ void test_zrealloc (TestResult* result, int seed)
   for (ii = 0; ii < num_memory_allocations; ii += 1) {
 
     int size = rand() % max_memory_size;
-    mem[ii] = (int*) zmalloc(size * sizeof(int));
+    mem[ii] = (int *) zmalloc(size * sizeof(int));
     old_size[ii] = size;
 
     // all memory allocations should succeed
@@ -149,7 +149,7 @@ void test_zrealloc (TestResult* result, int seed)
 
     int size = rand() % max_memory_size;
     if (mem[ii] != NULL) {
-      mem[ii] = (int*) zrealloc(mem[ii], size * sizeof(int));
+      mem[ii] = (int *) zrealloc(mem[ii], size * sizeof(int));
       new_size[ii] = size;
 
       // all memory allocations should succeed
@@ -196,9 +196,9 @@ void test_zrealloc (TestResult* result, int seed)
 }
 
 
-int main (int argc, char** argv)
+int main (int argc, char **argv)
 {
-  TestHarness* harness = (TestHarness*) malloc(sizeof(TestHarness));
+  TestHarness *harness = (TestHarness *) malloc(sizeof(TestHarness));
   createTestHarness(harness,
       "test memory allocator",
       (TestFunc[]) {
